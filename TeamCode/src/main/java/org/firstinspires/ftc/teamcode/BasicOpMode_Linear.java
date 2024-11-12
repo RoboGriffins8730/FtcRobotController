@@ -117,6 +117,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
             // leftPower  = -gamepad1.left_stick_y ;
             // rightPower = -gamepad1.right_stick_y ;
 
+            //Man this code rules so happy for y'all
             // Send calculated power to wheels
             frontLeftDrive.setPower(leftPower);
             frontRightDrive.setPower(rightPower);
