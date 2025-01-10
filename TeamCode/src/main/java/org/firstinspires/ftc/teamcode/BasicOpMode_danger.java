@@ -51,9 +51,9 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear OpMode")
+@TeleOp(name="DO NOT USE Basic: Linear OpMode", group="Linear OpMode")
 //@Disabled
-public class BasicOpMode_Linear extends LinearOpMode {
+public class BasicOpMode_danger extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -70,13 +70,8 @@ public class BasicOpMode_Linear extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-
-        //armUpPosition for STEM fair use only:
-        int armUpPosition = 1850;
-
-        //int armUpPosition = 2450;
+        int armUpPosition = 1000;
         int armDownPosition = 0;
-        int pullUpPosition = -1000;
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -89,9 +84,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
         //grabberIntake = hardwareMap.get(Servo.class, "open_grabber");
         //grabberRotate = hardwareMap.get(Servo.class, "rotate_grabber");
         liftMotor = hardwareMap.get(DcMotor.class, "lift_motor");
-        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftMotor.setTargetPosition(armDownPosition);
-        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //liftMotor.setTargetPosition(armDownPosition);
+        //liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
@@ -107,15 +102,15 @@ public class BasicOpMode_Linear extends LinearOpMode {
         while (opModeIsActive()) {
 
             // Setup a variable for each drive wheel to save power level for telemetry
-            //double leftPower;
-            //double rightPower;
+            double leftPower;
+            double rightPower;
 
             double frontLeftPower;
             double frontRightPower;
             double backLeftPower;
             double backRightPower;
-            //double liftUpPower;
-            //double liftDownPower;
+            double liftUpPower;
+            double liftDownPower;
 
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
@@ -125,8 +120,8 @@ public class BasicOpMode_Linear extends LinearOpMode {
             double drive = -gamepad1.left_stick_y;
             double strafe = gamepad1.left_stick_x;
             double turn  =  gamepad1.right_stick_x;
-            //double liftUp = gamepad2.right_trigger;
-            //double liftDown = gamepad2.left_trigger;
+            double liftUp = gamepad2.right_trigger;
+            double liftDown = gamepad2.left_trigger;
             //leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
             //rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
@@ -135,43 +130,14 @@ public class BasicOpMode_Linear extends LinearOpMode {
             // leftPower  = -gamepad1.left_stick_y ;
             // rightPower = -gamepad1.right_stick_y ;
 
-            //Future switch statement to manage setting lift to more than two positions
-            /*
-            int liftLevel = 0;
-            switch (liftLevel) {
-                case 0:
-
-            }
-            */
-            if (gamepad2.right_trigger  > 0.8) {
-                liftMotor.setTargetPosition(armUpPosition);
-                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                //we might get rid of power
-                liftMotor.setPower(0.5);
-            }
-            if (gamepad2.left_trigger > 0.8) {
-                liftMotor.setTargetPosition(armDownPosition);
-                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                //we might get rid of power
-                liftMotor.setPower(0.5);
-            }
-
-            //Button for lifting robot
-            if (gamepad2.a) {
-                liftMotor.setTargetPosition(pullUpPosition);
-                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                //we might get rid of power
-                liftMotor.setPower(0.5);
-            }
-
 
 
             frontLeftPower = Range.clip(drive + turn + strafe, -1.0, 1.0);
             frontRightPower = Range.clip(drive - turn - strafe, -1.0, 1.0);
             backLeftPower = Range.clip(drive + turn - strafe, -1.0, 1.0);
             backRightPower = Range.clip(drive - turn + strafe, -1.0, 1.0);
-            //liftUpPower = liftUp;
-            //liftDownPower = liftDown;
+            liftUpPower = liftUp;
+            liftDownPower = liftDown;
 
             //Man this code rules so happy for y'all
             // Send calculated power to wheels
@@ -179,7 +145,8 @@ public class BasicOpMode_Linear extends LinearOpMode {
             frontRightDrive.setPower(frontRightPower);
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
-
+            liftMotor.setPower(liftUpPower);
+            liftMotor.setPower(-liftDownPower);
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             //telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
