@@ -62,8 +62,8 @@ public class BasicOpMode_Linear extends LinearOpMode {
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
     private DcMotor liftMotor = null;
-    private Servo grabberIntake;
-    private Servo grabberRotate;
+    private Servo armServo = null;
+    private Servo grabberServo = null;
 
     @Override
     public void runOpMode() {
@@ -72,11 +72,15 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
 
         //armUpPosition for STEM fair use only:
-        int armUpPosition = 1850;
+        //int armUpPosition = 1850;
 
-        //int armUpPosition = 2450;
-        int armDownPosition = 0;
-        int pullUpPosition = -1000;
+        int armPosition5 = 2450;
+        int armPosition4 = 2000;
+        int armPosition3 = 1600;
+        int armPosition2 = 1200;
+        int armPosition1 = 800;
+        int armPosition0 = 0;
+        //int pullUpPosition = -1000;
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -86,11 +90,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
         backRightDrive = hardwareMap.get(DcMotor.class,"back_right_drive");
         //pullUp  = hardwareMap.get(DcMotor.class, "pull_up");
-        //grabberIntake = hardwareMap.get(Servo.class, "open_grabber");
-        //grabberRotate = hardwareMap.get(Servo.class, "rotate_grabber");
+        armServo = hardwareMap.get(Servo.class, "rotate_grabber");
+        grabberServo = hardwareMap.get(Servo.class, "open_grabber");
         liftMotor = hardwareMap.get(DcMotor.class, "lift_motor");
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftMotor.setTargetPosition(armDownPosition);
+        liftMotor.setTargetPosition(armPosition0);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -135,14 +139,119 @@ public class BasicOpMode_Linear extends LinearOpMode {
             // leftPower  = -gamepad1.left_stick_y ;
             // rightPower = -gamepad1.right_stick_y ;
 
-            //Future switch statement to manage setting lift to more than two positions
-            /*
-            int liftLevel = 0;
-            switch (liftLevel) {
-                case 0:
+            boolean isOpen = true;
 
+            //tells servo to rotate grabber arm
+            if (gamepad2.a) {
+                armServo.setPosition(0.5);
+            } else {
+                armServo.setPosition(0.01);
             }
-            */
+            //tells servo to open and close grabber
+            if (gamepad2.b) {
+                if (isOpen) {
+                    grabberServo.setPosition(0.01);
+                    isOpen = false;
+                } else {
+                    grabberServo.setPosition(0.5);
+                    isOpen = true;
+                }
+            }
+            //Future switch statement to manage setting lift to more than two positions
+
+            int liftLevel = 0;
+            if (gamepad2.right_trigger > 0.8) {
+                switch (liftLevel) {
+                    case 0:
+                        liftMotor.setTargetPosition(armPosition1);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel += 1;
+                        break;
+                    case 1:
+                        liftMotor.setTargetPosition(armPosition2);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel += 1;
+                        break;
+                    case 2:
+                        liftMotor.setTargetPosition(armPosition3);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel += 1;
+                        break;
+                    case 3:
+                        liftMotor.setTargetPosition(armPosition4);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel += 1;
+                        break;
+                    case 4:
+                        liftMotor.setTargetPosition(armPosition5);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel += 1;
+                        break;
+                    case 5:
+                        liftMotor.setTargetPosition(armPosition0);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel = 0;
+                        break;
+                }
+            }
+            if (gamepad2.left_trigger > 0.8) {
+                switch (liftLevel) {
+                    case 0:
+                        liftMotor.setTargetPosition(armPosition5);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel = 5;
+                        break;
+                    case 1:
+                        liftMotor.setTargetPosition(armPosition0);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel -= 1;
+                        break;
+                    case 2:
+                        liftMotor.setTargetPosition(armPosition1);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel -= 1;
+                        break;
+                    case 3:
+                        liftMotor.setTargetPosition(armPosition2);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel -= 1;
+                        break;
+                    case 4:
+                        liftMotor.setTargetPosition(armPosition3);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel -= 1;
+                        break;
+                    case 5:
+                        liftMotor.setTargetPosition(armPosition4);
+                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        liftMotor.setPower(0.5);
+                        liftLevel -= 1;
+                        break;
+            }
+            /* old code, only has 2 lift positions
             if (gamepad2.right_trigger  > 0.8) {
                 liftMotor.setTargetPosition(armUpPosition);
                 liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -155,10 +264,10 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 //we might get rid of power
                 liftMotor.setPower(0.5);
             }
-
+            */
             //Button for lifting robot
             if (gamepad2.a) {
-                liftMotor.setTargetPosition(pullUpPosition);
+                liftMotor.setTargetPosition(armPosition0);
                 liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 //we might get rid of power
                 liftMotor.setPower(0.5);
@@ -176,6 +285,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
             //Man this code rules so happy for y'all
             // Send calculated power to wheels
             frontLeftDrive.setPower(frontLeftPower);
+
             frontRightDrive.setPower(frontRightPower);
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
