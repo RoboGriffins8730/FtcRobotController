@@ -85,13 +85,13 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeftDrive  = hardwareMap.get(DcMotor.class, "front_left_drive");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
         frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
         backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-        backRightDrive = hardwareMap.get(DcMotor.class,"back_right_drive");
+        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         //pullUp  = hardwareMap.get(DcMotor.class, "pull_up");
-        armServo = hardwareMap.get(Servo.class, "rotate_grabber");
-        grabberServo = hardwareMap.get(Servo.class, "open_grabber");
+        //armServo = hardwareMap.get(Servo.class, "rotate_grabber");
+        //grabberServo = hardwareMap.get(Servo.class, "open_grabber");
         liftMotor = hardwareMap.get(DcMotor.class, "lift_motor");
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setTargetPosition(armPosition0);
@@ -106,6 +106,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
+        int liftLevel = 0;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -128,7 +129,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
             // - This uses basic math to combine motions and is easier to drive straight.
             double drive = -gamepad1.left_stick_y;
             double strafe = gamepad1.left_stick_x;
-            double turn  =  gamepad1.right_stick_x;
+            double turn = gamepad1.right_stick_x;
             //double liftUp = gamepad2.right_trigger;
             //double liftDown = gamepad2.left_trigger;
             //leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
@@ -139,6 +140,8 @@ public class BasicOpMode_Linear extends LinearOpMode {
             // leftPower  = -gamepad1.left_stick_y ;
             // rightPower = -gamepad1.right_stick_y ;
 
+
+            /*
             boolean isOpen = true;
 
             //tells servo to rotate grabber arm
@@ -157,45 +160,51 @@ public class BasicOpMode_Linear extends LinearOpMode {
                     isOpen = true;
                 }
             }
-            //Future switch statement to manage setting lift to more than two positions
+            */
 
-            int liftLevel = 0;
-            if (gamepad2.right_trigger > 0.8) {
+            //statement to manage setting lift to more than two positions
+            int delay = 200;
+            if (gamepad2.right_bumper) {
                 switch (liftLevel) {
                     case 0:
                         liftMotor.setTargetPosition(armPosition1);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel += 1;
+                        liftLevel = 1;
+                        sleep(delay);
                         break;
                     case 1:
                         liftMotor.setTargetPosition(armPosition2);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel += 1;
+                        liftLevel = 2;
+                        sleep(delay);
                         break;
                     case 2:
                         liftMotor.setTargetPosition(armPosition3);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel += 1;
+                        liftLevel = 3;
+                        sleep(delay);
                         break;
                     case 3:
                         liftMotor.setTargetPosition(armPosition4);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel += 1;
+                        liftLevel = 4;
+                        sleep(delay);
                         break;
                     case 4:
                         liftMotor.setTargetPosition(armPosition5);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel += 1;
+                        liftLevel = 5;
+                        sleep(delay);
                         break;
                     case 5:
                         liftMotor.setTargetPosition(armPosition0);
@@ -203,10 +212,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         //we might get rid of power
                         liftMotor.setPower(0.5);
                         liftLevel = 0;
+                        sleep(delay);
                         break;
                 }
             }
-            if (gamepad2.left_trigger > 0.8) {
+            if (gamepad2.left_bumper) {
                 switch (liftLevel) {
                     case 0:
                         liftMotor.setTargetPosition(armPosition5);
@@ -214,42 +224,49 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         //we might get rid of power
                         liftMotor.setPower(0.5);
                         liftLevel = 5;
+                        sleep(delay);
                         break;
                     case 1:
                         liftMotor.setTargetPosition(armPosition0);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel -= 1;
+                        liftLevel = 0;
+                        sleep(delay);
                         break;
                     case 2:
                         liftMotor.setTargetPosition(armPosition1);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel -= 1;
+                        liftLevel = 1;
+                        sleep(delay);
                         break;
                     case 3:
                         liftMotor.setTargetPosition(armPosition2);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel -= 1;
+                        liftLevel = 2;
+                        sleep(delay);
                         break;
                     case 4:
                         liftMotor.setTargetPosition(armPosition3);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel -= 1;
+                        liftLevel = 3;
+                        sleep(delay);
                         break;
                     case 5:
                         liftMotor.setTargetPosition(armPosition4);
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
-                        liftLevel -= 1;
+                        liftLevel = 4;
+                        sleep(delay);
                         break;
+                }
             }
             /* old code, only has 2 lift positions
             if (gamepad2.right_trigger  > 0.8) {
@@ -265,48 +282,52 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 liftMotor.setPower(0.5);
             }
             */
-            //Button for lifting robot
-            if (gamepad2.a) {
-                liftMotor.setTargetPosition(armPosition0);
-                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                //we might get rid of power
-                liftMotor.setPower(0.5);
+                //Button for lifting robot
+                if (gamepad2.a) {
+                    liftMotor.setTargetPosition(armPosition0);
+                    liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    //we might get rid of power
+                    liftMotor.setPower(0.5);
+                }
+
+
+                frontLeftPower = Range.clip(drive + turn + strafe, -1.0, 1.0);
+                frontRightPower = Range.clip(drive - turn - strafe, -1.0, 1.0);
+                backLeftPower = Range.clip(drive + turn - strafe, -1.0, 1.0);
+                backRightPower = Range.clip(drive - turn + strafe, -1.0, 1.0);
+                //liftUpPower = liftUp;
+                //liftDownPower = liftDown;
+
+                //Man this code rules so happy for y'all
+                // Send calculated power to wheels
+                frontLeftDrive.setPower(frontLeftPower);
+
+                frontRightDrive.setPower(frontRightPower);
+                backLeftDrive.setPower(backLeftPower);
+                backRightDrive.setPower(backRightPower);
+
+                // Show the elapsed game time and wheel power.
+                telemetry.addData("Status", "Run Time: " + runtime.toString());
+                //telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+                telemetry.addData("Controller Output", "drive (%.2f), turn (%.2f)", drive, turn);
+
+                // Get the current position of the armMotor
+                double position = liftMotor.getCurrentPosition();
+
+                // Get the target position of the armMotor
+                double desiredPosition = liftMotor.getTargetPosition();
+
+                // Show the position of the armMotor on telemetry
+                telemetry.addData("Encoder Position", position);
+
+                // Show the target position of the armMotor on telemetry
+                telemetry.addData("Desired Position", desiredPosition);
+
+                //Show the lift level
+                telemetry.addData("current lift level", liftLevel);
+
+                telemetry.update();
             }
-
-
-
-            frontLeftPower = Range.clip(drive + turn + strafe, -1.0, 1.0);
-            frontRightPower = Range.clip(drive - turn - strafe, -1.0, 1.0);
-            backLeftPower = Range.clip(drive + turn - strafe, -1.0, 1.0);
-            backRightPower = Range.clip(drive - turn + strafe, -1.0, 1.0);
-            //liftUpPower = liftUp;
-            //liftDownPower = liftDown;
-
-            //Man this code rules so happy for y'all
-            // Send calculated power to wheels
-            frontLeftDrive.setPower(frontLeftPower);
-
-            frontRightDrive.setPower(frontRightPower);
-            backLeftDrive.setPower(backLeftPower);
-            backRightDrive.setPower(backRightPower);
-
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            //telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.addData("Controller Output", "drive (%.2f), turn (%.2f)", drive, turn);
-
-            // Get the current position of the armMotor
-            double position = liftMotor.getCurrentPosition();
-
-            // Get the target position of the armMotor
-            double desiredPosition = liftMotor.getTargetPosition();
-
-            // Show the position of the armMotor on telemetry
-            telemetry.addData("Encoder Position", position);
-
-            // Show the target position of the armMotor on telemetry
-            telemetry.addData("Desired Position", desiredPosition);
-            telemetry.update();
         }
     }
-}
+

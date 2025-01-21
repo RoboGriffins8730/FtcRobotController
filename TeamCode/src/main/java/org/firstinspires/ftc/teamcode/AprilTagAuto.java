@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import static com.qualcomm.robotcore.util.Range.clip;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -64,9 +66,14 @@ import java.util.List;
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
+int positionX;
+int positionY;
+int positionZ;
+
 @TeleOp(name = "Concept: AprilTag Localization", group = "Concept")
 @Disabled
 public class AprilTagAuto extends LinearOpMode {
+
 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
@@ -225,9 +232,9 @@ public class AprilTagAuto extends LinearOpMode {
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
-                        detection.robotPose.getPosition().x,
-                        detection.robotPose.getPosition().y,
-                        detection.robotPose.getPosition().z));
+                        positionX = detection.robotPose.getPosition().x,
+                        positionY = detection.robotPose.getPosition().y,
+                        positionZ = detection.robotPose.getPosition().z));
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
                         detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
                         detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
@@ -242,6 +249,24 @@ public class AprilTagAuto extends LinearOpMode {
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
 
+
     }   // end method telemetryAprilTag()
 
+
+
 }   // end class
+
+public void driveAuto(int targetX, int targetY) {
+    //Find displacement from current position to target position:
+    int errorX = targetX - positionX;
+    int errorY = targetY - positionY;
+
+    if (errorX > targetX) {
+        //make motors move right until correct position
+    }
+
+    //Set speed of motor to be proportional to error
+    frontLeftMotor.setpower(clip(errorX/24, -1,1 ));
+    frontLeftMotor.setpower(clip(1, -1, errorY/24));
+
+}
