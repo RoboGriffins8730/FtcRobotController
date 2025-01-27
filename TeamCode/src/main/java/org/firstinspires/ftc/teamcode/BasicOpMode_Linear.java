@@ -62,6 +62,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
     private DcMotor liftMotor = null;
+    private DcMotor retractionMotor = null;
     private Servo armServo = null;
     private Servo grabberServo = null;
 
@@ -93,9 +94,13 @@ public class BasicOpMode_Linear extends LinearOpMode {
         //armServo = hardwareMap.get(Servo.class, "rotate_grabber");
         //grabberServo = hardwareMap.get(Servo.class, "open_grabber");
         liftMotor = hardwareMap.get(DcMotor.class, "lift_motor");
+        retractionMotor = hardwareMap.get(DcMotor.class, "retraction_motor");
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setTargetPosition(armPosition0);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        retractionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        retractionMotor.setTargetPosition(armPosition0);
+        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
@@ -162,7 +167,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
             }
             */
 
-            //statement to manage setting lift to more than two positions
+            //switch statement to manage setting lift to more than two positions
             int delay = 200;
             if (gamepad2.right_bumper) {
                 switch (liftLevel) {
@@ -171,6 +176,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition1);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 1;
                         sleep(delay);
                         break;
@@ -179,6 +189,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition2);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 2;
                         sleep(delay);
                         break;
@@ -187,6 +202,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition3);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 3;
                         sleep(delay);
                         break;
@@ -195,6 +215,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition4);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 4;
                         sleep(delay);
                         break;
@@ -203,6 +228,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition5);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 5;
                         sleep(delay);
                         break;
@@ -211,6 +241,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition0);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 0;
                         sleep(delay);
                         break;
@@ -223,6 +258,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition5);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 5;
                         sleep(delay);
                         break;
@@ -231,6 +271,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition0);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 0;
                         sleep(delay);
                         break;
@@ -239,6 +284,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition1);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 1;
                         sleep(delay);
                         break;
@@ -247,6 +297,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition2);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 2;
                         sleep(delay);
                         break;
@@ -255,6 +310,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition3);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 3;
                         sleep(delay);
                         break;
@@ -263,6 +323,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         //we might get rid of power
                         liftMotor.setPower(0.5);
+
+                        retractionMotor.setTargetPosition(armPosition4);
+                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        //we might get rid of power
+                        retractionMotor.setPower(-0.5);
                         liftLevel = 4;
                         sleep(delay);
                         break;

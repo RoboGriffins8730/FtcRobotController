@@ -31,9 +31,12 @@ package org.firstinspires.ftc.teamcode;
 
 import static com.qualcomm.robotcore.util.Range.clip;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -66,14 +69,21 @@ import java.util.List;
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
-int positionX;
-int positionY;
-int positionZ;
+
 
 @TeleOp(name = "Concept: AprilTag Localization", group = "Concept")
 @Disabled
 public class AprilTagAuto extends LinearOpMode {
+    int positionX;
+    int positionY;
+    int positionZ;
 
+    int positionYaw;
+
+    DcMotor frontLeftDrive = null;
+    DcMotor frontRightDrive = null;
+    DcMotor backLeftDrive = null;
+    DcMotor backRightDrive = null;
 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
@@ -119,6 +129,13 @@ public class AprilTagAuto extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        //hardware mapping goes here:
+
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
+        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+
         initAprilTag();
 
         // Wait for the DS start button to be touched.
@@ -133,6 +150,15 @@ public class AprilTagAuto extends LinearOpMode {
 
             // Push telemetry to the Driver Station.
             telemetry.update();
+
+            //Tell the robot to go places and do stuff:
+
+
+
+
+
+
+
 
             // Save CPU resources; can resume streaming when needed.
             if (gamepad1.dpad_down) {
@@ -238,7 +264,7 @@ public class AprilTagAuto extends LinearOpMode {
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
                         detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
                         detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
-                        detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+                        positionYaw = detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
@@ -251,22 +277,72 @@ public class AprilTagAuto extends LinearOpMode {
 
 
     }   // end method telemetryAprilTag()
+    public void forwardDriveAuto(int targetX) {
 
 
+        //Find displacement from current position to target position:
+        int errorX = targetX - positionX;
+
+
+
+        //Set speed of motor to be proportional to error
+        frontLeftDrive.setPower(clip(errorX/24, -1,1 ));
+        frontRightDrive.setPower(clip(errorX/24, -1, 1));
+        backLeftDrive.setPower(clip(errorX/24, -1,1 ));
+        backRightDrive.setPower(clip(errorX/24, -1, 1));
+
+    }
+
+    public void strafeLeftDriveAuto(int targetY) {
+
+
+        //Find displacement from current position to target position:
+
+        int errorY = targetY - positionY;
+
+
+        //Set speed of motor to be proportional to error
+        //Clean up power signage for strafing (do we need to add motor reversal statements in
+        //header?
+
+        //this makes it strafe left
+        frontLeftDrive.setPower(-clip(errorY/24, -1,1 ));
+        frontRightDrive.setPower(clip(errorY/24, -1, 1));
+        backLeftDrive.setPower(clip(errorY/24, -1,1 ));
+        backRightDrive.setPower(-clip(errorY/24, -1, 1));
+    }
+
+    public void strafeRightDriveAuto(int targetY) {
+
+
+        //Find displacement from current position to target position:
+
+        int errorY = targetY - positionY;
+
+
+        //Set speed of motor to be proportional to error
+        //Clean up power signage for strafing (do we need to add motor reversal statements in
+        //header?
+
+        //this makes it strafe right
+        frontLeftDrive.setPower(clip(errorY/24, -1,1 ));
+        frontRightDrive.setPower(-clip(errorY/24, -1, 1));
+        backLeftDrive.setPower(-clip(errorY/24, -1,1 ));
+        backRightDrive.setPower(clip(errorY/24, -1, 1));
+    }
+
+    //rotation drive method based on positionYaw
+
+    public void spinAuto(int targetYaw) {
+        //can only spin left
+
+        int errorYaw = targetYaw - positionYaw;
+
+        frontLeftDrive.setPower(-clip(errorYaw/24, -1, 1));
+        frontRightDrive.setPower(clip(errorYaw/24, -1, 1));
+        backLeftDrive.setPower(-clip(errorYaw/24, -1, 1));
+        backRightDrive.setPower(clip(errorYaw/24, -1, 1));
+    }
 
 }   // end class
 
-public void driveAuto(int targetX, int targetY) {
-    //Find displacement from current position to target position:
-    int errorX = targetX - positionX;
-    int errorY = targetY - positionY;
-
-    if (errorX > targetX) {
-        //make motors move right until correct position
-    }
-
-    //Set speed of motor to be proportional to error
-    frontLeftMotor.setpower(clip(errorX/24, -1,1 ));
-    frontLeftMotor.setpower(clip(1, -1, errorY/24));
-
-}
