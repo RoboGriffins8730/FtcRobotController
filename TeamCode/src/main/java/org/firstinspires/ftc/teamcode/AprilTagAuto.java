@@ -74,11 +74,11 @@ import java.util.List;
 @TeleOp(name = "Concept: AprilTag Localization", group = "Concept")
 @Disabled
 public class AprilTagAuto extends LinearOpMode {
-    int positionX;
-    int positionY;
-    int positionZ;
+    double positionX;
+    double positionY;
+    double positionZ;
 
-    int positionYaw;
+    double positionYaw;
 
     DcMotor frontLeftDrive = null;
     DcMotor frontRightDrive = null;
@@ -281,7 +281,7 @@ public class AprilTagAuto extends LinearOpMode {
 
 
         //Find displacement from current position to target position:
-        int errorX = targetX - positionX;
+        double errorX = targetX - positionX;
 
 
 
@@ -298,7 +298,7 @@ public class AprilTagAuto extends LinearOpMode {
 
         //Find displacement from current position to target position:
 
-        int errorY = targetY - positionY;
+        double errorY = targetY - positionY;
 
 
         //Set speed of motor to be proportional to error
@@ -317,7 +317,7 @@ public class AprilTagAuto extends LinearOpMode {
 
         //Find displacement from current position to target position:
 
-        int errorY = targetY - positionY;
+        double errorY = targetY - positionY;
 
 
         //Set speed of motor to be proportional to error
@@ -336,7 +336,7 @@ public class AprilTagAuto extends LinearOpMode {
     public void spinAuto(int targetYaw) {
         //can only spin left
 
-        int errorYaw = targetYaw - positionYaw;
+        double errorYaw = targetYaw - positionYaw;
 
         frontLeftDrive.setPower(-clip(errorYaw/24, -1, 1));
         frontRightDrive.setPower(clip(errorYaw/24, -1, 1));
