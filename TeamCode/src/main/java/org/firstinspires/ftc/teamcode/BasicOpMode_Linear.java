@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -63,7 +64,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
     private DcMotor backRightDrive = null;
     private DcMotor liftMotor = null;
     private DcMotor retractionMotor = null;
-    private Servo armServo = null;
+    private DcMotor armMotor = null;
     private Servo grabberServo = null;
 
     @Override
@@ -82,6 +83,8 @@ public class BasicOpMode_Linear extends LinearOpMode {
         int armPosition1 = 800;
         int armPosition0 = 0;
         //int pullUpPosition = -1000;
+        boolean isOpen = true;
+
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -91,16 +94,20 @@ public class BasicOpMode_Linear extends LinearOpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         //pullUp  = hardwareMap.get(DcMotor.class, "pull_up");
-        //armServo = hardwareMap.get(Servo.class, "rotate_grabber");
-        //grabberServo = hardwareMap.get(Servo.class, "open_grabber");
+        armMotor = hardwareMap.get(DcMotor.class, "grabber_arm_motor");
+        grabberServo = hardwareMap.get(Servo.class, "claw_servo");
         liftMotor = hardwareMap.get(DcMotor.class, "lift_motor");
         retractionMotor = hardwareMap.get(DcMotor.class, "retraction_motor");
+        //retractionMotor.setDirection(DcMotor.Direction.REVERSE);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setTargetPosition(armPosition0);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         retractionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         retractionMotor.setTargetPosition(armPosition0);
         retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //retractionMotor.setDirection(DcMotor.Direction.REVERSE);
+
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
@@ -109,6 +116,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
         // Wait for the game to start (driver presses PLAY)
+
+        //grabberServo.setPosition(0);
+
         waitForStart();
         runtime.reset();
         int liftLevel = 0;
@@ -146,29 +156,35 @@ public class BasicOpMode_Linear extends LinearOpMode {
             // rightPower = -gamepad1.right_stick_y ;
 
 
-            /*
-            boolean isOpen = true;
+
+
 
             //tells servo to rotate grabber arm
-            if (gamepad2.a) {
-                armServo.setPosition(0.5);
+            if (gamepad2.dpad_up) {
+                armMotor.setPower(-0.5);
+            } else if (gamepad2.dpad_down){
+                armMotor.setPower(0.5);
             } else {
-                armServo.setPosition(0.01);
+                armMotor.setPower(0);
             }
             //tells servo to open and close grabber
+
+            int delay = 200;
             if (gamepad2.b) {
                 if (isOpen) {
                     grabberServo.setPosition(0.01);
                     isOpen = false;
+                    sleep(delay);
                 } else {
-                    grabberServo.setPosition(0.5);
+                    grabberServo.setPosition(0.1);
                     isOpen = true;
+                    sleep(delay);
                 }
             }
-            */
+
 
             //switch statement to manage setting lift to more than two positions
-            int delay = 200;
+
             if (gamepad2.right_bumper) {
                 switch (liftLevel) {
                     case 0:
@@ -234,19 +250,6 @@ public class BasicOpMode_Linear extends LinearOpMode {
                         //we might get rid of power
                         retractionMotor.setPower(-0.5);
                         liftLevel = 5;
-                        sleep(delay);
-                        break;
-                    case 5:
-                        liftMotor.setTargetPosition(armPosition0);
-                        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        //we might get rid of power
-                        liftMotor.setPower(0.5);
-
-                        retractionMotor.setTargetPosition(armPosition0);
-                        retractionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        //we might get rid of power
-                        retractionMotor.setPower(-0.5);
-                        liftLevel = 0;
                         sleep(delay);
                         break;
                 }
@@ -348,7 +351,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
             }
             */
                 //Button for lifting robot
-                if (gamepad2.a) {
+                if (gamepad2.y) {
                     liftMotor.setTargetPosition(armPosition0);
                     liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     //we might get rid of power
@@ -377,15 +380,18 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 telemetry.addData("Controller Output", "drive (%.2f), turn (%.2f)", drive, turn);
 
                 // Get the current position of the armMotor
-                double position = liftMotor.getCurrentPosition();
+                double liftPosition = liftMotor.getCurrentPosition();
+                double retractionPosition = retractionMotor.getCurrentPosition();
 
                 // Get the target position of the armMotor
                 double desiredPosition = liftMotor.getTargetPosition();
 
                 // Show the position of the armMotor on telemetry
-                telemetry.addData("Encoder Position", position);
+                telemetry.addData("Lift Position", liftPosition);
+                telemetry.addData("retraction Position", retractionPosition);
 
-                // Show the target position of the armMotor on telemetry
+
+            // Show the target position of the armMotor on telemetry
                 telemetry.addData("Desired Position", desiredPosition);
 
                 //Show the lift level
