@@ -154,8 +154,8 @@ public class RobotTeleopPOV_Linear extends LinearOpMode {
 
             // Send telemetry message to signify robot running;
             telemetry.addData("claw",  "Offset = %.2f", clawOffset);
-            telemetry.addData("left",  "%.2f", left);
-            telemetry.addData("right", "%.2f", right);
+            //telemetry.addData("left",  "%.2f", left);
+            //telemetry.addData("right", "%.2f", right);
             telemetry.update();
 
             // Pace this loop so jaw action is reasonable speed.
