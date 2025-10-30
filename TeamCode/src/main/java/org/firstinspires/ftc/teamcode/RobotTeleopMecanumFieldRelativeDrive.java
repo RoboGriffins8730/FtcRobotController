@@ -124,7 +124,7 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         } else {
             driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
-        // If you hold b button, the launcher is turned on, otherwise, it does nothing
+        // If you hold right trigger, the launcher is turned on, otherwise, it does nothing
         if (gamepad2.right_trigger > 0.85) {
             launcherLeft.setPower(1);
             launcherRight.setPower(1);
