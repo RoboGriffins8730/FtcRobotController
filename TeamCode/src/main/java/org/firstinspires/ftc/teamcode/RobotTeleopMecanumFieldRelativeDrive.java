@@ -33,9 +33,18 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLStatus;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+
+import java.util.List;
+
 
 /*
  * This OpMode illustrates how to program your robot to drive field relative.  This means
@@ -52,8 +61,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
  *
  */
 @TeleOp(name = "Robot: Field Relative Mecanum Drive", group = "Robot")
-@Disabled
+//@Disabled
 public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
+
     // This declares the four motors needed
     DcMotor frontLeftDrive;
     DcMotor frontRightDrive;
@@ -62,8 +72,13 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
     DcMotor launcherLeft;
     DcMotor launcherRight;
     DcMotor conveyor;
-    DcMotor intakeLeft;
-    DcMotor intakeRight;
+    CRServo intakeLeft;
+    CRServo intakeRight;
+
+    Boolean canShoot;
+
+    Limelight3A camera;
+
     // This declares the IMU needed to get the current direction the robot is facing
     IMU imu;
 
@@ -76,15 +91,17 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         launcherLeft = hardwareMap.get(DcMotor.class, "launcher_left");
         launcherRight = hardwareMap.get(DcMotor.class, "launcher_right");
         conveyor = hardwareMap.get(DcMotor.class, "conveyor");
-        intakeLeft = hardwareMap.get(DcMotor.class, "intake_left");
-        intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
+        intakeLeft = hardwareMap.get(CRServo.class, "intakeLeft");
+        intakeRight = hardwareMap.get(CRServo.class, "intakeRight");
+        camera = hardwareMap.get(Limelight3A.class, "camera");
+        //intakeLeft = hardwareMap.get(DcMotor.class, "intake_left");
         // We set the left motors in reverse which is needed for drive trains where the left
         // motors are opposite to the right ones.
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
 
         launcherLeft.setDirection(DcMotor.Direction.REVERSE);
-        intakeRight.setDirection(DcMotor.Direction.REVERSE);
+
 
         // This uses RUN_USING_ENCODER to be more accurate.   If you don't have the encoder
         // wires, you should remove these
@@ -94,15 +111,8 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         imu = hardwareMap.get(IMU.class, "imu");
-        // This needs to be changed to match the orientation on your robot
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
-        RevHubOrientationOnRobot orientationOnRobot = new
-                RevHubOrientationOnRobot(logoDirection, usbDirection);
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
+        camera.start();
     }
 
     @Override
@@ -111,47 +121,63 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         telemetry.addLine("Hold left bumper to drive in robot relative");
         telemetry.addLine("The left joystick sets the robot direction");
         telemetry.addLine("Moving the right joystick left and right turns the robot");
+        
+        LLResult result = camera.getLatestResult();
+        if (result.isValid()) {
+            if (Math.abs(result.getTx()) < 3.0) {
+                canShoot = true;
+            }
+            else {
+                canShoot = false;
+            }
+        }
 
         // If you press the A button, then you reset the Yaw to be zero from the way
         // the robot is currently pointing
-        if (gamepad2.a) {
+        if (gamepad1.a) {
             imu.resetYaw();
         }
-        // If you press the left bumper, you get a drive from the point of view of the robot
+        // If you don't press the left bumper, you get a drive from the point of view of the robot
         // (much like driving an RC vehicle)
         if (gamepad1.left_bumper) {
-            drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
-        } else {
             driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        } else {
+            drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
+
+        //currently, we don't have apriltag-assisted firing
+
+        //this is for shooting from small triangle
         // If you hold right trigger, the launcher is turned on, otherwise, it does nothing
         if (gamepad2.right_trigger > 0.85) {
-            launcherLeft.setPower(1);
-            launcherRight.setPower(1);
+            launcherLeft.setPower(0.95);
+            launcherRight.setPower(-0.95);
         } else {
             launcherLeft.setPower(0);
             launcherRight.setPower(0);
         }
 
         // remember to check if this motor needs to be reversed
-        // If you hold x button, the conveyor belt moves, otherwise, it does nothing
-        if (gamepad2.x) {
-            conveyor.setPower(1);
+        // If you hold b button, the conveyor belt moves, otherwise, it does nothing
+        if (gamepad2.b) {
+            conveyor.setPower(-0.75);
         } else {
             conveyor.setPower(0);
         }
-        // Not sure which motor to reverse, right motor is currently reversed
-        // When y button is held, intake is on, otherwise, it does nothing
-        if (gamepad2.y) {
+        //check if left intake needs to be reversed instead
+        // When y is pressed, the intake spins, other, does nothing
+        if (gamepad1.y) {
             intakeLeft.setPower(1);
-            intakeRight.setPower(1);
+            intakeRight.setPower(-1);
         } else {
-            intakeLeft.setPower(0);
+             intakeLeft.setPower(0);
             intakeRight.setPower(0);
         }
+        telemetry.addData("Can we shoot?", canShoot);
+        telemetry.update();
     }
 
-    // This routine drives the robot field relative
+    // This method drives the robot field relative
     private void driveFieldRelative(double forward, double right, double rotate) {
         // First, convert direction being asked to drive to polar coordinates
         double theta = Math.atan2(forward, right);
@@ -173,10 +199,11 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
     public void drive(double forward, double right, double rotate) {
         // This calculates the power needed for each wheel based on the amount of forward,
         // strafe right, and rotate
-        double frontLeftPower = forward + right + rotate;
-        double frontRightPower = forward - right - rotate;
-        double backRightPower = forward + right - rotate;
-        double backLeftPower = forward - right + rotate;
+        double frontLeftPower = forward + right + 0.7*rotate;
+        double frontRightPower = forward - right - 0.7*rotate;
+        double backRightPower = forward + right - 0.7*rotate;
+        double backLeftPower = forward - right + 0.7*
+                rotate;
 
         double maxPower = 1.0;
         double maxSpeed = 1.0;  // make this slower for outreaches
