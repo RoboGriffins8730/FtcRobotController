@@ -61,7 +61,7 @@ import java.util.List;
  *
  */
 @TeleOp(name = "Robot: Field Relative Mecanum Drive", group = "Robot")
-//@Disabled
+
 public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
 
     // This declares the four motors needed
