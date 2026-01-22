@@ -29,14 +29,16 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -54,7 +56,7 @@ import java.util.List;
  * This OpMode assumes that you have four mecanum wheels each on its own motor named:
  *   front_left_motor, front_right_motor, back_left_motor, back_right_motor
  *
- *   and that the left motors are flipped such that when they turn clockwise the wheel moves backwards
+ * and that the left motors are flipped such that when they turn clockwise the wheel moves backwards
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
@@ -74,6 +76,9 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
     DcMotor conveyor;
 
     DcMotor intake;
+
+    I2cDeviceSynch prism;
+
     /*
     Boolean canShoot;
 
@@ -100,7 +105,9 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         RevHubOrientationOnRobot RevOrientation = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.UP);
         imu.initialize(new IMU.Parameters(RevOrientation));
 
-        //intakeLeft = hardwareMap.get(DcMotor.class, "intake_left");
+        prism = hardwareMap.get(I2cDeviceSynch.class, "prism");
+        prism.setI2cAddress(I2cAddr.create7bit(0x40));
+        prism.engage();
         // We set the left motors in reverse which is needed for drive trains where the left
         // motors are opposite to the right ones.
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -109,8 +116,7 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         launcherLeft.setDirection(DcMotor.Direction.REVERSE);
 
 
-        // This uses RUN_USING_ENCODER to be more accurate.   If you don't have the encoder
-        // wires, you should remove these
+        // This uses RUN_USING_ENCODER to be more accurate.
         /* frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -131,10 +137,10 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         LLResult result = camera.getLatestResult();
         if (result.isValid()) {
             if (Math.abs(result.getTx()) < 4.0) {
-                canShoot = true;
+                setAll(0, 255, 0);
             }
             else {
-                canShoot = false;
+                setAll(255, 0, 0);
             }
         }
 */
@@ -144,7 +150,6 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
             imu.resetYaw();
         }
         // If you don't press the left bumper, you get a drive from the point of view of the robot
-        // (much like driving an RC vehicle)
         if (gamepad1.left_bumper) {
             driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
@@ -166,7 +171,6 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
             launcherRight.setPower(0);
         }
 
-        // remember to check if this motor needs to be reversed
         // If you hold b button, the conveyor belt moves, otherwise, it does nothing
         if (gamepad2.b) {
             conveyor.setPower(-0.75);
@@ -186,8 +190,6 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         } else {
             intake.setPower(0);
         }
-        telemetry.addData("Can we shoot?", canShoot);
-        telemetry.update();
         */
     }
 
@@ -209,6 +211,16 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         drive(newForward, newRight, rotate);
     }
 
+    //this changes the colors of all the LEDs based on RGB input
+    void setAll(int r, int g, int b) {
+        byte[] data = new byte[] {
+                (byte) r,
+                (byte) g,
+                (byte) b
+        };
+        prism.write(0x00, data);
+    }
+
     // Thanks to FTC16072 for sharing this code!!
     public void drive(double forward, double right, double rotate) {
         // This calculates the power needed for each wheel based on the amount of forward,
@@ -223,16 +235,13 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         double maxSpeed = 1.0;  // make this slower for outreaches
 
         // This is needed to make sure we don't pass > 1.0 to any wheel
-        // It allows us to keep all of the motors in proportion to what they should
-        // be and not get clipped
+        // It allows us to keep all of the motors in proportion to what they should be and not get clipped
         maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
         maxPower = Math.max(maxPower, Math.abs(frontRightPower));
         maxPower = Math.max(maxPower, Math.abs(backRightPower));
         maxPower = Math.max(maxPower, Math.abs(backLeftPower));
 
         // We multiply by maxSpeed so that it can be set lower for outreaches
-        // When a young child is driving the robot, we may not want to allow full
-        // speed.
         frontLeftDrive.setPower(maxSpeed * (frontLeftPower / maxPower));
         frontRightDrive.setPower(maxSpeed * (frontRightPower / maxPower));
         backLeftDrive.setPower(maxSpeed * (backLeftPower / maxPower));
