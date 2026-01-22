@@ -159,7 +159,6 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
             drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
 
-        //currently, we don't have apriltag-assisted firing
 
         //this is for shooting from small triangle
         // If you hold right trigger, the launcher is turned on, otherwise, it does nothing
