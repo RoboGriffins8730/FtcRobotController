@@ -72,47 +72,53 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
     DcMotor launcherLeft;
     DcMotor launcherRight;
     DcMotor conveyor;
-    CRServo intakeLeft;
-    CRServo intakeRight;
 
+    DcMotor intake;
+    /*
     Boolean canShoot;
 
     Limelight3A camera;
+
+     */
 
     // This declares the IMU needed to get the current direction the robot is facing
     IMU imu;
 
     @Override
     public void init() {
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+        backRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
         launcherLeft = hardwareMap.get(DcMotor.class, "launcher_left");
         launcherRight = hardwareMap.get(DcMotor.class, "launcher_right");
         conveyor = hardwareMap.get(DcMotor.class, "conveyor");
-        intakeLeft = hardwareMap.get(CRServo.class, "intakeLeft");
-        intakeRight = hardwareMap.get(CRServo.class, "intakeRight");
-        camera = hardwareMap.get(Limelight3A.class, "camera");
+        intake = hardwareMap.get(DcMotor.class, "intake");
+        // camera = hardwareMap.get(Limelight3A.class, "camera");
+        imu = hardwareMap.get(IMU.class, "imu");
+
+        RevHubOrientationOnRobot RevOrientation = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.UP);
+        imu.initialize(new IMU.Parameters(RevOrientation));
+
         //intakeLeft = hardwareMap.get(DcMotor.class, "intake_left");
         // We set the left motors in reverse which is needed for drive trains where the left
         // motors are opposite to the right ones.
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
 
         launcherLeft.setDirection(DcMotor.Direction.REVERSE);
 
 
         // This uses RUN_USING_ENCODER to be more accurate.   If you don't have the encoder
         // wires, you should remove these
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        /* frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        */
         imu = hardwareMap.get(IMU.class, "imu");
 
-        camera.start();
+        //camera.start();
     }
 
     @Override
@@ -121,17 +127,17 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         telemetry.addLine("Hold left bumper to drive in robot relative");
         telemetry.addLine("The left joystick sets the robot direction");
         telemetry.addLine("Moving the right joystick left and right turns the robot");
-        
+        /*
         LLResult result = camera.getLatestResult();
         if (result.isValid()) {
-            if (Math.abs(result.getTx()) < 3.0) {
+            if (Math.abs(result.getTx()) < 4.0) {
                 canShoot = true;
             }
             else {
                 canShoot = false;
             }
         }
-
+*/
         // If you press the A button, then you reset the Yaw to be zero from the way
         // the robot is currently pointing
         if (gamepad1.a) {
@@ -141,6 +147,9 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         // (much like driving an RC vehicle)
         if (gamepad1.left_bumper) {
             driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        }
+        if (gamepad1.right_trigger > 0.85) {
+            drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, 0.5*gamepad1.right_stick_x);
         } else {
             drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
@@ -150,8 +159,8 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         //this is for shooting from small triangle
         // If you hold right trigger, the launcher is turned on, otherwise, it does nothing
         if (gamepad2.right_trigger > 0.85) {
-            launcherLeft.setPower(0.95);
-            launcherRight.setPower(-0.95);
+            launcherLeft.setPower(1);
+            launcherRight.setPower(-1);
         } else {
             launcherLeft.setPower(0);
             launcherRight.setPower(0);
@@ -164,17 +173,22 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         } else {
             conveyor.setPower(0);
         }
+        if (gamepad2.a) {
+            conveyor.setPower(0.75);
+        } else {
+            conveyor.setPower(0);
+        }
         //check if left intake needs to be reversed instead
         // When y is pressed, the intake spins, other, does nothing
-        if (gamepad1.y) {
-            intakeLeft.setPower(1);
-            intakeRight.setPower(-1);
+        /*
+        if (gamepad2.y) {
+            intake.setPower(1);
         } else {
-             intakeLeft.setPower(0);
-            intakeRight.setPower(0);
+            intake.setPower(0);
         }
         telemetry.addData("Can we shoot?", canShoot);
         telemetry.update();
+        */
     }
 
     // This method drives the robot field relative
@@ -199,11 +213,11 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
     public void drive(double forward, double right, double rotate) {
         // This calculates the power needed for each wheel based on the amount of forward,
         // strafe right, and rotate
-        double frontLeftPower = forward + right + 0.7*rotate;
-        double frontRightPower = forward - right - 0.7*rotate;
-        double backRightPower = forward + right - 0.7*rotate;
-        double backLeftPower = forward - right + 0.7*
-                rotate;
+
+        double frontLeftPower = forward - right - rotate;
+        double frontRightPower = forward + right + rotate;
+        double backRightPower = forward - right + rotate;
+        double backLeftPower = forward + right - rotate;
 
         double maxPower = 1.0;
         double maxSpeed = 1.0;  // make this slower for outreaches

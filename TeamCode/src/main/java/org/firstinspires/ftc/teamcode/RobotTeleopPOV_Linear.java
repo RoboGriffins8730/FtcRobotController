@@ -49,7 +49,7 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="Robot: Teleop POV", group="Robot")
-@Disabled
+//@Disabled
 public class RobotTeleopPOV_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
@@ -134,29 +134,32 @@ public class RobotTeleopPOV_Linear extends LinearOpMode {
             backRightDrive.setPower(backRightPower);
 
             // Use gamepad left & right Bumpers to open and close the claw
-            if (gamepad1.right_bumper)
-                clawOffset += CLAW_SPEED;
-            else if (gamepad1.left_bumper)
-                clawOffset -= CLAW_SPEED;
+           // if (gamepad1.right_bumper)
+              //  clawOffset += CLAW_SPEED;
+           // else if (gamepad1.left_bumper)
+           //     clawOffset -= CLAW_SPEED;
 
             // Move both servos to new position.  Assume servos are mirror image of each other.
-            clawOffset = Range.clip(clawOffset, -0.5, 0.5);
-            leftClaw.setPosition(MID_SERVO + clawOffset);
-            rightClaw.setPosition(MID_SERVO - clawOffset);
+            // clawOffset = Range.clip(clawOffset, -0.5, 0.5);
+            // leftClaw.setPosition(MID_SERVO + clawOffset);
+            // rightClaw.setPosition(MID_SERVO - clawOffset);
 
             // Use gamepad buttons to move arm up (Y) and down (A)
+            /*
             if (gamepad1.y)
                 leftArm.setPower(ARM_UP_POWER);
             else if (gamepad1.a)
                 leftArm.setPower(ARM_DOWN_POWER);
             else
                 leftArm.setPower(0.0);
+                */
+
 
             // Send telemetry message to signify robot running;
-            telemetry.addData("claw",  "Offset = %.2f", clawOffset);
+        //    telemetry.addData("claw",  "Offset = %.2f", clawOffset);
             //telemetry.addData("left",  "%.2f", left);
             //telemetry.addData("right", "%.2f", right);
-            telemetry.update();
+        //    telemetry.update();
 
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);
