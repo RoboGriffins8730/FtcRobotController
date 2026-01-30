@@ -93,7 +93,7 @@ public class RobotAutoDriveByTime_Linear extends LinearOpMode {
     double heading;
 
     enum DriveState {
-        SHOOTING, INTAKE1, INTAKE2, INTAKE3, END;
+        SHOOTING, INTAKE1, INTAKE2, INTAKE3, INTAKE4, INTAKE5, INTAKE6, END;
     }
     DriveState driveState = DriveState.SHOOTING;
 
@@ -149,75 +149,89 @@ public class RobotAutoDriveByTime_Linear extends LinearOpMode {
 
                 xpos = robotPose.getPosition().x;
                 zpos = robotPose.getPosition().z;
-                heading = robotPose.getOrientation().getYaw();
+                heading = Math.toDegrees(robotPose.getOrientation().getYaw());
 
                 telemetry.addData("x position (m)", xpos);
                 telemetry.addData("z position (m)", zpos);
-                telemetry.addData("heading (deg)", Math.toDegrees(heading));
+                telemetry.addData("heading (deg)", heading);
             }
             telemetry.update();
-
+/*
             //all calls to drivingRobot are placeholder
             switch (driveState) {
                 case SHOOTING:
-                    if (drivingRobot(4, 4, 60)) {
+                    if (drivingRobot((1/32.8)*4, (1/32.8)*4, 45)) {
                         conveyorShooting();
                         driveState = DriveState.INTAKE1;
                         break;
                     }
                     break;
                 case INTAKE1:
-                    if (drivingRobot(3, 3, 0)) {
+                    if (drivingRobot((1/32.8)*4.5, (1/32.8)*1.5, 0)) {
                         intakeConveyor();
-                        if (drivingRobot(2, 3, 0)) {
-                            intakeConveyor();
-                            driveState = DriveState.SHOOTING;
-                            break;
-                        }
+                        driveState = DriveState.INTAKE4;
+                        break;
                     }
                     break;
                 case INTAKE2:
-                    if (drivingRobot(7, 3, 0)) {
+                    if (drivingRobot((1/32.8)*4.5, (1/32.8)*2.5, 0)) {
                         intakeConveyor();
-                        if (drivingRobot(2, 3, 0)) {
-                            intakeConveyor();
-                            driveState = DriveState.SHOOTING;
-                            break;
-                        }
+                        driveState = DriveState.INTAKE5;
+                        break;
                     }
                     break;
                 case INTAKE3:
-                    if (drivingRobot(3, 3, 0)) {
+                    if (drivingRobot((1/32.8)*4.5, (1/32.8)*3.5, 0)) {
                         intakeConveyor();
-                        if (drivingRobot(4, 3, 0)) {
-                            intakeConveyor();
-                            driveState = DriveState.SHOOTING;
-                            break;
-                        }
+                        driveState = DriveState.INTAKE6;
+                        break;
+                    }
+                    break;
+                case INTAKE4:
+                    if (drivingRobot((1/32.8)*5, (1/32.8)*1.5, 0)) {
+                        intakeConveyor();
+                        driveState = DriveState.SHOOTING;
+                        break;
+                    }
+                    break;
+                case INTAKE5:
+                    if (drivingRobot((1/32.8)*5, (1/32.8)*2.5, 0)) {
+                        intakeConveyor();
+                        driveState = DriveState.SHOOTING;
+                        break;
+                    }
+                    break;
+                case INTAKE6:
+                    if (drivingRobot((1/32.8)*5, (1/32.8)*3.5, 0)) {
+                        intakeConveyor();
+                        driveState = DriveState.SHOOTING;
+                        break;
                     }
                     break;
                 case END:
                     if (drivingRobot(5, 5, 90)) {
                         break;
                     }
+                    break;
             }
+            */
         }
 
     }
 
     public void intakeConveyor() {
-        intake.setPower(80);
-        conveyor.setPower(80);
+        intake.setPower(0.8);
+        conveyor.setPower(0.8);
         sleep(2000);
         intake.setPower(0);
         conveyor.setPower(0);
     }
 
     public void conveyorShooting() {
-        launcherLeft.setPower(100);
-        launcherRight.setPower(100);
+        launcherLeft.setPower(1);
+        launcherRight.setPower(1);
         sleep(500);
-        conveyor.setPower(80);
+        conveyor.setPower(0.8);
         sleep(2000);
         launcherRight.setPower(0);
         launcherLeft.setPower(0);
@@ -229,15 +243,21 @@ public class RobotAutoDriveByTime_Linear extends LinearOpMode {
         double errorX = targetX - xpos;
         double errorZ = targetZ - zpos;
         double errorHeading = targetHeading - heading;
+        while (errorHeading > 180) errorHeading -= 360;
+        while (errorHeading < -180) errorHeading += 360;
 
         //this converts the error so it is relative to robot
-        double forwardError = errorX * Math.sin(heading) + errorZ * Math.cos(heading);
-        double strafeError = errorX * Math.cos(heading) - errorZ * Math.sin(heading);
+        double forwardError = errorX * Math.sin(Math.toRadians(heading)) + errorZ * Math.cos(Math.toRadians(heading));
+        double strafeError = errorX * Math.cos(Math.toRadians(heading)) - errorZ * Math.sin(Math.toRadians(heading));
 
         //this is proportional control, so the robot slows down as the error decreases
         double forwardPower = 0.5 * forwardError;
         double strafePower = 0.5 * strafeError;
-        double turnPower = 0.02 * errorHeading;
+        double turnPower = 0.01 * errorHeading;
+
+        forwardPower = Math.max(-0.6, Math.min(0.6, forwardPower));
+        strafePower  = Math.max(-0.6, Math.min(0.6, strafePower));
+        turnPower    = Math.max(-0.4, Math.min(0.4, turnPower));
 
         double frontLeftPower = forwardPower - strafePower - turnPower;
         double frontRightPower = forwardPower + strafePower + turnPower;
@@ -246,7 +266,7 @@ public class RobotAutoDriveByTime_Linear extends LinearOpMode {
 
 
 
-        if ((errorX + errorZ < 0.05) && errorHeading < 5) {
+        if ((Math.hypot(errorX, errorZ) < 0.05) && Math.abs(errorHeading) < 5) {
             frontLeftDrive.setPower(0);
             frontRightDrive.setPower(0);
             backLeftDrive.setPower(0);

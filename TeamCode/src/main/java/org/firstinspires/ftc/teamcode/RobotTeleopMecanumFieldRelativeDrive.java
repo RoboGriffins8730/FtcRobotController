@@ -79,12 +79,12 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
 
     I2cDeviceSynch prism;
 
-    /*
+
     Boolean canShoot;
 
     Limelight3A camera;
 
-     */
+
 
     // This declares the IMU needed to get the current direction the robot is facing
     IMU imu;
@@ -99,15 +99,16 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         launcherRight = hardwareMap.get(DcMotor.class, "launcher_right");
         conveyor = hardwareMap.get(DcMotor.class, "conveyor");
         intake = hardwareMap.get(DcMotor.class, "intake");
-        // camera = hardwareMap.get(Limelight3A.class, "camera");
+        camera = hardwareMap.get(Limelight3A.class, "camera");
         imu = hardwareMap.get(IMU.class, "imu");
 
         RevHubOrientationOnRobot RevOrientation = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.UP);
         imu.initialize(new IMU.Parameters(RevOrientation));
-
+/*
         prism = hardwareMap.get(I2cDeviceSynch.class, "prism");
         prism.setI2cAddress(I2cAddr.create7bit(0x40));
         prism.engage();
+ */
         // We set the left motors in reverse which is needed for drive trains where the left
         // motors are opposite to the right ones.
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -123,8 +124,8 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         */
         imu = hardwareMap.get(IMU.class, "imu");
-
-        //camera.start();
+        //camera.pipelineSwitch(0);
+        camera.start();
     }
 
     @Override
@@ -133,17 +134,27 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         telemetry.addLine("Hold left bumper to drive in robot relative");
         telemetry.addLine("The left joystick sets the robot direction");
         telemetry.addLine("Moving the right joystick left and right turns the robot");
-        /*
+
+
+        LLStatus status = camera.getStatus();
+        telemetry.addData("Name", "%s",
+                status.getName());
+        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
+                status.getTemp(), status.getCpu(),(int)status.getFps());
+        telemetry.addData("Pipeline", "Index: %d, Type: %s",
+                status.getPipelineIndex(), status.getPipelineType());
+
+
         LLResult result = camera.getLatestResult();
-        if (result.isValid()) {
-            if (Math.abs(result.getTx()) < 4.0) {
-                setAll(0, 255, 0);
-            }
-            else {
-                setAll(255, 0, 0);
+
+        telemetry.addData("Is camera working?", result.isValid());
+        if (result != null) {
+            if (result.isValid()) {
+                canShoot = Math.abs(result.getTx()) < 4.0;
             }
         }
-*/
+        telemetry.addData("can shoot?", canShoot);
+
         // If you press the A button, then you reset the Yaw to be zero from the way
         // the robot is currently pointing
         if (gamepad1.a) {
@@ -160,7 +171,7 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         }
 
 
-        //this is for shooting from small triangle
+        //this is for shooting from triangle
         // If you hold right trigger, the launcher is turned on, otherwise, it does nothing
         if (gamepad2.right_trigger > 0.85) {
             launcherLeft.setPower(1);
@@ -172,24 +183,24 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
 
         // If you hold b button, the conveyor belt moves, otherwise, it does nothing
         if (gamepad2.b) {
-            conveyor.setPower(-0.75);
+            conveyor.setPower(-1);
         } else {
             conveyor.setPower(0);
         }
-        if (gamepad2.a) {
-            conveyor.setPower(0.75);
-        } else {
-            conveyor.setPower(0);
-        }
-        //check if left intake needs to be reversed instead
-        // When y is pressed, the intake spins, other, does nothing
-        /*
         if (gamepad2.y) {
+            conveyor.setPower(1);
+        } else {
+            conveyor.setPower(0);
+        }
+
+        // When a is pressed, the intake spins, other, does nothing
+        if (gamepad2.a) {
             intake.setPower(1);
         } else {
             intake.setPower(0);
         }
-        */
+
+        telemetry.update();
     }
 
     // This method drives the robot field relative
@@ -209,7 +220,7 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         // Finally, call the drive method with robot relative forward and right amounts
         drive(newForward, newRight, rotate);
     }
-
+/*
     //this changes the colors of all the LEDs based on RGB input
     void setAll(int r, int g, int b) {
         byte[] data = new byte[] {
@@ -219,7 +230,7 @@ public class RobotTeleopMecanumFieldRelativeDrive extends OpMode {
         };
         prism.write(0x00, data);
     }
-
+*/
     // Thanks to FTC16072 for sharing this code!!
     public void drive(double forward, double right, double rotate) {
         // This calculates the power needed for each wheel based on the amount of forward,
